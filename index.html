@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>XUPERCOOL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Arial}
+    .header{background:#111;padding:6px 12px;text-align:center;font-size:16px}
+    .container{display:flex;height:calc(100% - 40px)}
+    /* Visor centrado y responsive */
+    .visor{flex:3;display:flex;justify-content:center;align-items:center;background:#000;position:relative}
+    #player{width:100%;max-width:960px;height:100%;max-height:540px;border:0}
+    /* Panel de canales más ancho */
+    .channels-container{flex:1.5;min-width:240px;padding:10px;background:#222;overflow-y:auto}
+    .btn{display:block;margin:4px 0;padding:8px 12px;background:#007BFF;color:#fff;border:none;border-radius:4px;width:100%;cursor:pointer;font-size:15px;transition:background 0.3s}
+    .btn:hover{background:#0056b3}
+    .btn.active{background:#FF0000} /* Estilo para el botón activo */
+    .search-bar{padding: 8px; width: calc(100% - 16px); box-sizing: border-box; font-size: 16px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff;}
+    @media(max-width:768px){.container{flex-direction:column}#player{max-height:40vh}}
+    .fullscreen-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 5px;
+    }
+    #search-container {
+      position: sticky;
+      top: 0;
+      background: #222;
+      padding: 10px 0;
+      z-index: 10;
+    }
+    #now-playing {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">XUPERCOOL</div>
+  <div class="logo-container" style="text-align: center; padding: 10px 0;">
+    <img src="https://i.postimg.cc/0QKq131f/logo8-2-222011.png" alt="XUPERCOOL" style="max-width: 125px; height: auto;">
+  </div>
+
+  <div class="container">
+    <div class="visor">
+      <iframe id="player" allow="autoplay; fullscreen" allowfullscreen></iframe>
+      <button class="fullscreen-btn" onclick="goFullscreen()">Pantalla Completa</button>
+    </div>
+    <div id="channelsList" class="channels-container">
+      <div id="search-container">
+        <span id="now-playing">Emitiendo: Cargando...</span>
+        <input type="text" id="searchInput" class="search-bar" placeholder="Buscar canales...">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const total = 1000;
+    let currentActiveButton = null;
+
+    const channelNames = [
+      "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 2 UK", "TNT Sports 3 UK", "TNT Sports 4 UK", "Sky Sports Football UK", "Sky Sports Arena UK", "Sky Sports Action UK", "Sky Sports Main Event", "Fox Sports 1 USA", "Tennis Channel", "EuroSport 1 UK", "EuroSport 2 UK", "DAZN LaLiga 2", "ESPN USA", "ESPN2 USA", "beIN Sports MENA English 3", "Polsat Sport Poland", "Canal+ Sport Poland", "Sport TV1 Portugal", "Polsat Sport Extra Poland", "ABC USA", "CBS USA", "NBC USA", "FOX USA", "TNT Sports 1 UK", "Supersport Football", "EuroSport 1 Poland", "EuroSport 2 Poland", "Sky Sports F1 UK", "beIN Sports MENA English 1", "beIN SPORTS 1 Turkey", "beIN SPORTS 2 Turkey", "beIN SPORTS 3 Turkey", "Sky Sports Cricket", "TUDN USA", "beIN SPORTS 4 Turkey", "MULTI SPORT", "MULTI SPORT", "Sky Sports Golf UK", "Eleven Sports 1 Poland", "Eleven Sports 2 Poland", "Canal+ Sport 2 Poland", "Sport TV2 Portugal", "CANAL+ SPORT 5 Poland", "TNT Sports 1 UK", "TNT Sports 1 UK", "SporTV Brasil", "SporTV2 Brasil", "SporTV3 Brasil", "ESPN Brasil", "ESPN2 Brasil", "ESPN3 Brasil", "Movistar Laliga", "ESPN4 Brasil", "TNT Sports 1 UK", "TNT Brasil", "Premier Brasil", "Combate Brasil", "beIN Sports MENA English 2", "beIN Sports MENA 1", "beIN Sports MENA 2", "beIN Sports MENA 3", "beIN Sports MENA 4", "beIN Sports MENA 5", "beIN Sports MENA 6", "beIN Sports MENA 7", "beIN Sports MENA Premium 1", "beIN Sports MENA Premium 2", "beIN Sports MENA Premium 3", "Sport Klub 1 Serbia", "Sport Klub 2 Serbia", "Sport Klub 3 Serbia", "Sport Klub 4 Serbia", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TNT Sports 1 UK", "TSN1", "TSN2", "TSN3", "TSN4", "TSN5", "beIN SPORTS 1 France", "beIN SPORTS 2 France", "beIN SPORTS 3 France", "RMC Sport 1 France", "RMC Sport 2 France", "TNT Sports 1 UK", "TNT Sports 1 UK", "Astro SuperSport 1", "Astro SuperSport 2", "Astro SuperSport 3", "Astro SuperSport 4", "Match TV Russia", "TVP Sport Poland", "Polsat Sport News Poland", "Sky sports Premier League", "Telemundo", "Univision", "Unimas", "Arena Sport 1 Premium", "Arena Sport 2 Premium", "Match Football 1 Russia", "Match Football 2 Russia", "Match Football 3 Russia", "Arena Sport 3 Premium", "Sport 1 Israel", "Sport 2 Israel", "Sport 3 Israel", "Sport 4 Israel", "Sport 5 Israel", "Sport 5 PLUS Israel", "Sport 5 Live Israel", "Sport 5 Star Israel", "Sport 5 Gold Israel", "ESPN SUR", "ESPN2 SUR", "StarzPlay CricLife 3 HD", "StarzPlay CricLife 2 HD", "StarzPlay CricLife 1 HD", "ESPNews", "Sport TV4 Portugal", "Sport TV5 Portugal", "Sport TV6 Portugal", "Gol Mundial 1", "NewsNation USA", "Reelz Channel", "Science Channel", "Hallmark Movies & Mysterie", "Adult Swim", "Fox Business", "FXX USA", "Magnolia Network", "CW USA", "Freeform", "A&E USA", "AMC USA", "Animal Planet", "BBC America (BBCA)", "BET USA", "Bravo USA", "CBS Sports Network (CBSSN)", "CNBC USA", "Comedy Central", "Discovery Life Channel", "Disney Channel", "Discovery Channel", "Disney XD", "E! Entertainment Television", "ESPNU USA", "FX USA", "GOLF Channel USA", "Game Show Network", "The Hallmark Channel", "HBO USA", "History USA", "Headline News", "Investigation Discovery (ID USA)", "ION USA", "Lifetime Network", "MSNBC", "National Geographic (NGC)", "NICK JR", "NICK", "Oprah Winfrey Network (OWN)", "Oxygen True Crime", "Showtime USA", "Paramount Network", "Starz", "TBS USA", "TLC", "TNT USA", "Cartoon Network", "Travel Channel", "TruTV USA", "TVLAND", "USA Network", "VH1 USA", "CNN USA", "Willow Cricket", "Fox News", "Dave", "BBC News Channel HD", "ITV 1 UK", "ITV 2 UK", "ITV 3 UK", "ITV 4 UK", "Channel 4 UK", "Channel 5 UK", "BBC One UK", "BBC Two UK", "BBC Three UK", "BBC Four UK", "5 USA", "Sky Witness HD", "Sky Atlantic", "E4 Channel", "RTE 1", "RTE 2", "Sky Sports News UK", "MTV UK", "SuperSport Cricket", "Fox Cricket", "Astro Cricket", "MTV USA", "beIN SPORTS en Espanol", "SYFY USA", "Cinemax USA", "ESPN Deportes", "WWE Network", "MUTV UK", "Veronica NL Netherland", "ESPN 1 NL", "Benfica TV PT", "FX Movie Channel", "Ziggo Sport Docu NL", "The Food Network", "SEC Network USA", "ESPN 2 NL", "ESPN Premium Argentina", "TNT Sports Argentina", "Lifetime Movies Network", "RTL7 Netherland", "VTV+ Uruguay", "Win Sports+ Columbia", "Ziggo Sport Select NL", "The Weather Channel", "MATCh! BOETs Russia", "Ziggo Sport Racing NL", "BIG TEN Network (BTN USA)", "Ziggo Sport Voetbal NL", "MLB Network USA", "Digi Sport 1 Romania", "Digi Sport 2 Romania", "Digi Sport 3 Romania", "Digi Sport 4 Romania", "NBA TV USA", "NFL Network", "Sportsnet Ontario", "Sportsnet West", "Sportsnet East", "Sportsnet 360", "Sportsnet World", "Sportsnet One", "SuperSport Grandstand", "SuperSport PSL", "SuperSport Premier league", "SuperSport LaLiga", "SuperSport Variety 1", "SuperSport Variety 2", "SuperSport Variety 3", "SuperSport Variety 4", "SuperSport Action", "SuperSport Rugby", "SuperSport Golf", "SuperSport Tennis", "SuperSport Motorsport", "BeIN SPORTS USA", "DAZN 1 Bar DE", "DAZN 2 Bar DE", "Eleven Sports 3 Poland", "Arena Sport 1 Serbia", "Arena Sport 2 Serbia", "Arena Sport 3 Serbia", "Arena Sport 1 Croatia", "Arena Sport 2 Croatia", "Arena Sport 3 Croatia", "Movistar Liga de Campeones", "Movistar Deportes Spain", "#0 Spain", "Movistar Deportes 2 Spain", "Orange Sport 1 Romania", "Orange Sport 2 Romania", "Orange Sport 3 Romania", "Orange Sport 4 Romania", "Polsat News Poland", "TVN24 Poland", "DAZN 1 Spain", "DAZN 2 Spain", "DAZN 3 Spain", "DAZN 4 Spain", "Sky Sports MIX UK", "PTV Sports", "Viaplay Sports 1 UK", "TVP INFO", "Sport Klub HD Serbia", "Sport TV3 Portugal", "Eleven Sports 1 Portugal", "Eleven Sports 2 Portugal", "Eleven Sports 3 Portugal", "Eleven Sports 4 Portugal", "Eleven Sports 5 Portugal", "Sky Sport Football Italy", "Sky Sport UNO Italy", "Sky Sport Arena Italy", "Canal+ Foot France", "Canal+ Sport360", "Diema Sport Bulgaria", "Diema Sport 2 Bulgaria", "Diema Sport 3 Bulgaria", "Nova Sport Bulgaria", "Eurosport 1 Bulgaria", "Eurosport 2 Bulgaria", "Ring Bulgaria", "Max Sport 1 Bulgaria", "Max Sport 2 Bulgaria", "Max Sport 3 Bulgaria", "Max Sport 4 Bulgaria", "BNT 1 Bulgaria", "BNT 2 Bulgaria", "BNT 3 Bulgaria", "bTV Bulgaria", "Nova TV Bulgaria", "bTV Action Bulgaria", "Diema Bulgaria", "FOX HD Bulgaria", "bTV Lady Bulgaria", "Diema Family Bulgaria", "Canal+ Sport 1 Afrique", "Canal+ Sport 2 Afrique", "Canal+ Sport 3 Afrique", "Canal+ Sport 4 Afrique", "Canal+ Sport 5 Afrique", "beIN SPORTS Australia 1", "beIN SPORTS Australia 2", "beIN SPORTS Australia 3", "beIN Sports MAX 4 France", "beIN Sports MAX 5 France", "beIN Sports MAX 6 France", "beIN Sports MAX 7 France", "beIN Sports MAX 8 France", "beIN Sports MAX 9 France", "beIN Sports MAX 10 France", "18+ (Player-01)", "18+ (Player-02)", "18+ (Player-03)", "18+ (Player-04)", "18+ (Player-05)", "18+ (Player-06)", "18+ (Player-07)", "18+ (Player-08)", "18+ (Player-09)", "18+ (Player-10)", "18+ (Player-11)", "18+ (Player-12)", "18+ (Player-13)", "18+ (Player-14)", "18+ (Player-15)", "18+ (Player-16)", "18+ (Player-17)", "18+ (Player-18)", "18+ (Player-19)", "18+ (Player-20)", "#Vamos Spain", "Barca TV Spain", "Real Madrid TV Spain", "EuroSport 1 Spain", "EuroSport 2 Spain", "Movistar Deportes 3 Spain", "Movistar Deportes 4 Spain", "Movistar Golf Spain", "Teledeporte Spain (TDP)", "GOL PLAY Spain", "Antena 3 Spain", "Telecinco Spain", "TVE La 1 Spain", "La Sexta Spain", "Cuatro Spain", "TVE La 2 Spain", "DAZN F1 ES", "DAZN LaLiga", "LaLiga SmartBank TV", "Canal 11 Portugal", "ONE 1 HD Israel", "ONE 2 HD Israel", "Yes Movies Action Israel", "Yes Movies Kids Israel", "Yes Movies Comedy Israel", "Channel 9 Israel", "Channel 10 Israe", "Channel 11 Israel", "Channel 12 Israel", "Viaplay Sports 2 UK", "Channel 13 Israel", "Channel 14 Israel", "HOT3 Israel", "Sky Sports Racing UK", "Racing Tv UK", "Sky Sport Top Event DE", "Sky Sport Mix DE", "Sky Sport Bundesliga 1 HD", "Sky Sport Austria 1 HD", "TVP1 Poland", "TVP2 Poland", "Polsat Poland", "Motowizja Poland", "Polsat Film Poland", "TVN HD Poland", "Canal+ Premium Poland", "Canal+ Family Poland", "FilmBox Premium Poland", "HBO Poland", "Canal+ Seriale Poland", "SportDigital Fussball", "SuperSport MaXimo 1", "Match Premier Russia", "Sky Sports Golf Italy", "Sky Sport MotoGP Italy", "Sky Sport Tennis Italy", "Sky Sport F1 Italy", "BeIN Sports HD Qatar", "Arena Sport 1 BiH", "Arena Sport 4 Croatia", "Arena Sport 4 Serbia", "Nova Sport Serbia", "Prima Sport 1", "Prima Sport 2", "Prima Sport 3", "Prima Sport 4", "Sky Sport Select NZ", "Sky Sport 1 NZ", "Sky Sport 2 NZ", "Sky Sport 3 NZ", "Sky Sport 4 NZ", "Sky Sport 5 NZ", "Sky Sport 6 NZ", "Sky Sport 7 NZ", "Sky Sport 8 NZ", "Sky Sport 9 NZ", "Viaplay Xtra UK", "Willow XTRA", "Nova Sports Premier League Greece", "Abu Dhabi Sports 1 UAE", "Abu Dhabi Sports 2 UAE", "Smithsonian Channel", "CTV Canada", "Dubai Sports 1 UAE", "Dubai Sports 2 UAE", "Dubai Sports 3 UAE", "Dubai Racing 1 UAE", "Dubai Racing 2 UAE", "Abu Dhabi Sports 1 Premium", "Yas TV UAE", "Abu Dhabi Sports 2 Premium", "OnTime Sports", "OnTime Sports 2", "Newsmax USA", "SSC Sport 1", "SSC Sport 2", "SSC Sport 3", "SSC Sport 4", "SSC Sport 5", "SSC Sport Extra 1", "SSC Sport Extra 2", "SSC Sport Extra 3", "Cosmote Sport 1 HD", "Cosmote Sport 2 HD", "Cosmote Sport 3 HD", "Cosmote Sport 4 HD", "Cosmote Sport 5 HD", "Cosmote Sport 6 HD", "Cosmote Sport 7 HD", "Cosmote Sport 8 HD", "Cosmote Sport 9 HD", "Nova Sports 1 Greece", "Nova Sports 2 Greece", "Nova Sports 3 Greece", "Nova Sports 4 Greece", "Nova Sports 5 Greece", "Nova Sports 6 Greece", "Nova Sports Start Greece", "Nova Sports Prime Greece", "Nova Sports News Greece", "Sport1+ Germany", "Sport1 Germany", "TNT Sports HD Chile", "FOX Deportes USA", "TCM USA", "L'Equipe France", "MAVTV USA", "CMT USA", "Boomerang", "Nicktoons", "TeenNick", "Destination America", "Disney JR", "POP TV USA", "MY9TV USA", "WETV USA", "IFC TV USA", "Discovery Family", "Sundance TV", "VICE TV", "TV ONE USA", "Motor Trend", "METV USA", "NHL Network USA", "ACC Network USA", "FYI", "ACC Network USA", "Nick Music", "Longhorn Network USA", "Universal Kids USA", "Crime+ Investigation USA", "S4C UK", "Sky Cinema Premiere UK", "Sky Cinema Select UK", "Sky Cinema Hits UK", "Sky Cinema Greats UK", "Sky Cinema Animation UK", "Sky Cinema Family UK", "Sky Cinema Action UK", "The Hallmark", "Sky Cinema Thriller UK", "The Hallmark", "Sky Cinema Sci-Fi Horror UK", "Sky Showcase UK", "Sky Arts UK", "Sky Comedy UK", "Sky Crime", "Showtime SHOxBET USA", "Sky History", "Gold UK", "Film4 UK", "HBO2 USA", "HBO Comedy USA", "HBO Family USA", "HBO Latino USA", "HBO Signature USA", "HBO Zone USA", "Comet USA", "Cooking Channel USA", "TMC Channel USA", "CBC CA", "Tennis+ 1", "Tennis+ 2", "Tennis+ 3", "Tennis+ 4", "Tennis+ 5", "Tennis+ 6", "Tennis+ 7", "Tennis+ 8", "Tennis+ 9", "Tennis+ 10", "Tennis+ 11", "Tennis+ 12", "Tennis+ 13", "Tennis+ 14", "Tennis+ 15", "Cleo TV", "Sporting TV Portugal", "AXN Movies Portugal", "Porto Canal Portugal", "RTP 1 Portugal", "RTP 2 Portugal", "RTP 3 Portugal", "SIC Portugal", "TVI Portugal", "TVI Reality Portugal", "Arte DE", "3sat DE", "BBC 1 DE", "ZDF Info DE", "SAT.1 DE", "BBC 1 DE", "ZDF Info DE", "ProSieben (PRO7) DE", "Kabel Eins (Kabel 1) DE", "Sixx DE", "MDR DE", "WDR DE", "SWR DE", "NDR DE", "BR Fernsehen DE", "SUPER RTL DE", "SR Fernsehen DE", "HR Fernsehen DE", "Ten Sports PK", "AXS TV USA", "Galavision USA", "Fashion TV", "Nat Geo Wild USA", "TYC Sports Argentina", "C More Football Sweden", "COZI TV USA", "Mundotoro TV Spain", "C SPAN 1", "FETV - Family Entertainment Television", "Grit Channel", "NBC Sports Bay Area", "NBC Sports Boston", "NBC Sports California", "FOX Soccer Plus", "Fight Network", "Fox Sports 2 USA", "SportsNet New York (SNY)", "Globo SP", "Globo RIO", "NESN USA", "YES Network USA", "Spectrum Sportsnet LA", "MSG USA", "ABCNY USA", "CBSNY USA", "Fox Sports Argentina", "FOXNY USA", "NBCNY USA", "Marquee Sports Network", "New! CWPIX 11", "Fox Weather Channel", "NBC Sports Chicago", "NBC Sports Philadelphia", "NBC Sports Washington", "Max Sport 1 Croatia", "Max Sport 2 Croatia", "Alkass One", "Alkass Two", "Alkass Three", "Alkass Four", "ABS-CBN", "DSTV Mzansi Magic", "Fox Sports 2 Argentina", "Fox Sports 3 Argentina", "6'eren Denmark", "DR1 Denmark", "DR2 Denmark", "Kanal 4 Denmark", "Kanal 5 Denmark", "CANAL9 Denmark", "MTV Denmark", "TV2 Bornholm Denmark", "TV2 Sport X Denmark", "TV3 Sport Denmark", "TV2 Sport Denmark", "C More Stars Sweden", "C More First Sweden", "C More Hits Sweden", "C More Series Sweden", "V Film Premiere", "V Film Family", "TV2 Denmark", "TV2 Zulu", "TV3+ Denmark", "FOX Sports 502 AU", "FOX Sports 503 AU", "FOX Sports 504 AU", "FOX Sports 505 AU", "FOX Sports 506 AU", "FOX Sports 507 AU", "Liverpool TV (LFC TV)", "DSTV M-Net", "DSTV kykNET & kie", "MASN USA", "Fox Sports Premium MX", "Citytv", "CBC CA", "TVA Sports", "TVA Sports 2", "Noovo CA", "Global CA", "Yes TV CA", "CTV 2 Canada", "RDS CA", "RDS 2 CA", "RDS Info CA", "TVO CA", "Rai 1 Italy", "Rai 2 Italy", "Rai 3 Italy", "Rai 3 Italy", "Italia 1 Italy", "La7 Italy", "LA7d HD+ Italy", "20 Mediaset Italy", "Rai Premium Italy", "Sky Cinema Collection Italy", "Sky Cinema Uno Italy", "Sky Cinema Action Italy", "8Sky Cinema Comedy Italy", "Sky Cinema Uno +24 Italy", "Sky Cinema Romance Italy", "Sky Cinema Family Italy", "Sky Cinema Due +24 Italy", "Sky Cinema Drama Italy", "8Sky Cinema Suspense Italy", "Sky Sport 24 Italy", "Sky Sport Calcio Italy", "Sky Calcio 1 (251) Italy", "Sky Calcio 2 (252) Italy", "Sky Calcio 3 (253) Italy", "Sky Calcio 4 (254) Italy", "Sky Calcio 5 (255) Italy", "Sky Calcio 6 (256) Italy", "Sky Calcio 7 (257) Italy", "Sky Serie Italy", "EuroSport 1 Italy", "EuroSport 2 Italy", "Sky UNO Italy", "Rai Sport Italy"
+      // ... continúa la lista hasta 1000 si lo deseas
+    ];
+
+    function createButtons(from, to) {
+      const wrap = document.getElementById('channelsList');
+      for (let i = from; i <= to; i++) {
+        const b = document.createElement('button');
+        b.className = 'btn';
+        b.textContent = channelNames[i - 1] || `Canal ${i}`;
+        b.dataset.channel = i;
+        b.onclick = () => load(i, b);
+        wrap.appendChild(b);
+      }
+    }
+
+    function load(n, button) {
+      const player = document.getElementById('player');
+      player.src = `https://thedaddy.to/embed/stream-${n}.php`;
+      
+      const nowPlaying = document.getElementById('now-playing');
+      nowPlaying.textContent = `Emitiendo: ${button.textContent}`;
+
+      if (currentActiveButton) {
+        currentActiveButton.classList.remove('active');
+      }
+
+      button.classList.add('active');
+      currentActiveButton = button;
+    }
+
+    function goFullscreen() {
+      const player = document.getElementById('player');
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      } else if (player.mozRequestFullScreen) {
+        player.mozRequestFullScreen();
+      } else if (player.webkitRequestFullscreen) {
+        player.webkitRequestFullscreen();
+      } else if (player.msRequestFullscreen) {
+        player.msRequestFullscreen();
+      }
+    }
+
+    // Carga todos los botones para que el buscador funcione correctamente
+    createButtons(1, total);
+
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const allButtons = document.querySelectorAll('.btn');
+
+      allButtons.forEach(button => {
+        const channelName = button.textContent.toLowerCase();
+        const channelNumber = button.dataset.channel;
+        
+        if (channelName.includes(searchTerm) || channelNumber.includes(searchTerm)) {
+          button.style.display = 'block';
+        } else {
+          button.style.display = 'none';
+        }
+      });
+    });
+
+    // Carga el primer canal y activa su botón al inicio
+    load(1, document.querySelector('.btn'));
+  </script>
+</body>
+</html>
