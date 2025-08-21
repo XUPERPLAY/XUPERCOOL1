@@ -8,16 +8,97 @@
     html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Arial}
     .header{background:#111;padding:6px 12px;text-align:center;font-size:16px}
     .container{display:flex;height:calc(100% - 40px)}
+    
     /* Visor centrado y responsive */
-    .visor{flex:3;display:flex;justify-content:center;align-items:center;background:#000;position:relative}
-    #player{width:100%;max-width:960px;height:100%;max-height:540px;border:0}
-    /* Panel de canales más ancho */
-    .channels-container{flex:1.5;min-width:240px;padding:10px;background:#222;overflow-y:auto}
-    .btn{display:block;margin:4px 0;padding:8px 12px;background:#007BFF;color:#fff;border:none;border-radius:4px;width:100%;cursor:pointer;font-size:15px;transition:background 0.3s}
+    .visor{
+      flex:3;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      background:#000;
+      position:relative
+    }
+    
+    #player{
+      width:100%;
+      max-width:960px;
+      height:100%;
+      max-height:540px;
+      border:0
+    }
+    
+    /* Nombre del canal en la esquina inferior izquierda */
+    #now-playing {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 12px;
+      z-index: 5;
+      background: none;
+      pointer-events: none;
+    }
+    
+    /* Panel de canales */
+    .channels-container{
+      flex:1.5;
+      min-width:240px;
+      background:#222;
+      overflow-y:auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Contenedor de búsqueda fijo */
+    #search-container {
+      position: sticky;
+      top: 0;
+      background: #222;
+      padding: 10px;
+      z-index: 10;
+    }
+    
+    .search-bar{
+      padding: 8px; 
+      width: 100%; 
+      box-sizing: border-box; 
+      font-size: 16px; 
+      border-radius: 4px; 
+      border: 1px solid #555; 
+      background: #333; 
+      color: #fff;
+    }
+    
+    /* Lista de canales con scroll */
+    #channelsList {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 10px 10px 10px;
+    }
+    
+    .btn{
+      display:block;
+      margin:4px 0;
+      padding:8px 12px;
+      background:#007BFF;
+      color:#fff;
+      border:none;
+      border-radius:4px;
+      width:100%;
+      cursor:pointer;
+      font-size:15px;
+      transition:background 0.3s
+    }
+    
     .btn:hover{background:#0056b3}
-    .btn.active{background:#FF0000} /* Estilo para el botón activo */
-    .search-bar{padding: 8px; width: calc(100% - 16px); box-sizing: border-box; font-size: 16px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff;}
-    @media(max-width:768px){.container{flex-direction:column}#player{max-height:40vh}}
+    .btn.active{background:#FF0000}
+    
+    @media(max-width:768px){
+      .container{flex-direction:column}
+      #player{max-height:40vh}
+    }
+    
     .fullscreen-btn {
       position: absolute;
       bottom: 20px;
@@ -30,23 +111,10 @@
       font-size: 14px;
       border-radius: 5px;
     }
-    #search-container {
-      position: sticky;
-      top: 0;
-      background: #222;
-      padding: 10px 0;
-      z-index: 10;
-    }
-    #now-playing {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-      color: #007BFF;
-    }
   </style>
 </head>
 <body>
-  <div class="header">By *  ᘜᖇOᑌᑭ ᙭ᑌᑭᗴᖇᒪIՏT © *</div>
+  <div class="header">By *  ᘜᖇOᑌᑭ ᙭ᑌᑭᗴᖇᒪIՏT © *</div>
   <div class="logo-container" style="text-align: center; padding: 10px 0;">
     <img src="https://i.postimg.cc/sDYmVHJD/logo8-19-192246.png" alt="XUPERCOOL" style="max-width: 135px; height: auto;">
   </div>
@@ -55,12 +123,14 @@
     <div class="visor">
       <iframe id="player" allow="autoplay; fullscreen" allowfullscreen></iframe>
       <button class="fullscreen-btn" onclick="goFullscreen()">Pantalla Completa</button>
+      <div id="now-playing">Cargando...</div>
     </div>
-    <div id="channelsList" class="channels-container">
+    
+    <div class="channels-container">
       <div id="search-container">
-        <span id="now-playing">Estas viendo: Cargando...</span>
         <input type="text" id="searchInput" class="search-bar" placeholder="Buscar canales...">
       </div>
+      <div id="channelsList"></div>
     </div>
   </div>
 
@@ -1118,8 +1188,7 @@
 "CANAL_Por Determinar-1047",
 "CANAL_Por Determinar-1048",
 "CANAL_Por Determinar-1049",
-"CANAL_Por Determinar-1050",
-      // ... continúa la lista hasta 1050 si lo deseas
+"CANAL_Por Determinar-1050"
     ];
 
     function createButtons(from, to) {
@@ -1138,8 +1207,8 @@
       const player = document.getElementById('player');
       player.src = `https://thedaddy.to/embed/stream-${n}.php`;
       
-      const nowPlaying = document.getElementById('now-playing');
-      nowPlaying.textContent = `Estas viendo: ${button.textContent}`;
+      // Actualizar solo el nombre del canal sin "Emitiendo:"
+      document.getElementById('now-playing').textContent = button.textContent;
 
       if (currentActiveButton) {
         currentActiveButton.classList.remove('active');
